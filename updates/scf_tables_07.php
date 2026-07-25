@@ -5,30 +5,24 @@ namespace JanVince\SmallContactForm\Updates;
 use Schema;
 use October\Rain\Database\Updates\Migration;
 
-class SmallContactFormTables_02 extends Migration
+class SmallContactFormTables_07 extends Migration
 {
     public function up()
     {
-
         Schema::table('janvince_smallcontactform_messages', function($table)
         {
-            $table->string('remote_ip')->nullable();
-            $table->index('remote_ip');
+            $table->boolean('processed_message')->default(0);
         });
-
     }
 
     public function down()
     {
-        if (Schema::hasColumn('janvince_smallcontactform_messages', 'remote_ip')) {
-
+        if (Schema::hasColumn('janvince_smallcontactform_messages', 'processed_message')) 
+        {
             Schema::table('janvince_smallcontactform_messages', function($table)
             {
-                $table->dropIndex('janvince_smallcontactform_messages_remote_ip_index');
-                $table->dropColumn('remote_ip');
+                $table->dropColumn('processed_message');
             });
-
         }
     }
 }
-

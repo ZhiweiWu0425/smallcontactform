@@ -1,5 +1,8 @@
 fields: {  }
+
 tabs:
+    stretch: true
+
     fields:
 
         ## FORM
@@ -30,6 +33,17 @@ tabs:
             span: left
             type: checkbox
             tab: 'janvince.smallcontactform::lang.settings.tabs.form'
+
+        form_hide_after_success_visually:
+            label: 'janvince.smallcontactform::lang.settings.form.hide_after_success_visually'
+            comment: 'janvince.smallcontactform::lang.settings.form.hide_after_success_visually_comment'
+            span: right
+            type: checkbox
+            tab: 'janvince.smallcontactform::lang.settings.tabs.form'
+            trigger:
+                action: show
+                field: form_hide_after_success
+                condition: checked
 
         form_use_placeholders:
             label: 'janvince.smallcontactform::lang.settings.form.use_placeholders'
@@ -139,7 +153,7 @@ tabs:
         form_notes:
             label: 'janvince.smallcontactform::lang.settings.form.notes'
             comment: 'janvince.smallcontactform::lang.settings.form.notes_comment'
-            span: left
+            span: full
             type: textarea
             tab: 'janvince.smallcontactform::lang.settings.tabs.form'
 
@@ -216,24 +230,32 @@ tabs:
             form:
                 fields:
                     name:
-                        span: full
+                        span: left
                         label: 'janvince.smallcontactform::lang.settings.form_fields.name'
                         comment: 'janvince.smallcontactform::lang.settings.form_fields.name_comment'
                         type: text
                         required: true
                         # cssClass: 'bg-info'
                     type:
-                        span: left
+                        span: right
                         label: 'janvince.smallcontactform::lang.settings.form_fields.type'
                         type: dropdown
                         required: true
-                        cssClass: field-indent
+                        # cssClass: field-indent
+
                     label:
-                        span: right
+                        span: left
                         label: 'janvince.smallcontactform::lang.settings.form_fields.label'
                         placeholder: 'janvince.smallcontactform::lang.settings.form_fields.label_placeholder'
                         type: text
-                        cssClass: field-indent
+                        # cssClass: field-indent
+
+                    hint:
+                        span: right
+                        label: 'janvince.smallcontactform::lang.settings.form_fields.hint'
+                        placeholder: 'janvince.smallcontactform::lang.settings.form_fields.hint_placeholder'
+                        type: text
+                        # cssClass: field-indent
 
                     field_values:
                         # label: 'janvince.smallcontactform::lang.settings.form_fields.validation'
@@ -241,7 +263,7 @@ tabs:
                         span: full
                         type: repeater
                         style: collapsed
-                        cssClass: field-indent
+                        cssClass: mt-2
                         trigger:
                             action: show
                             field: type
@@ -263,7 +285,7 @@ tabs:
                         comment: 'janvince.smallcontactform::lang.settings.form_fields.custom_code_comment'
                         type: codeeditor
                         size: large
-                        cssClass: field-indent
+                        # cssClass: field-indent
                         trigger:
                             action: show
                             field: type
@@ -274,7 +296,7 @@ tabs:
                         label: 'janvince.smallcontactform::lang.settings.form_fields.custom_code_twig'
                         comment: 'janvince.smallcontactform::lang.settings.form_fields.custom_code_twig_comment'
                         type: checkbox
-                        cssClass: field-indent
+                        # cssClass: field-indent
                         trigger:
                             action: show
                             field: type
@@ -283,7 +305,7 @@ tabs:
                     field_custom_code_line:
                         span: full
                         type: section
-                        cssClass: field-indent
+                        # cssClass: field-indent
                         trigger:
                             action: show
                             field: type
@@ -295,84 +317,23 @@ tabs:
                         comment: 'janvince.smallcontactform::lang.settings.form_fields.custom_content_comment'
                         type: richeditor
                         size: large
-                        cssClass: field-indent
+                        # cssClass: field-indent
                         trigger:
                             action: show
                             field: type
                             condition: value[custom_content]
 
-                    field_custom_content_section:
+                    settings_section:
                         span: full
                         type: section
-                        cssClass: field-indent
-                        trigger:
-                            action: show
-                            field: type
-                            condition: value[custom_content]
-
-                    field_styling:
-                        label: 'janvince.smallcontactform::lang.settings.form_fields.field_styling'
-                        comment: 'janvince.smallcontactform::lang.settings.form_fields.field_styling_comment'
-                        span: left
-                        type: checkbox
-                        tab: 'janvince.smallcontactform::lang.settings.tabs.form_fields'
-                        cssClass: field-indent
-
-                    autofocus:
-                        label: 'janvince.smallcontactform::lang.settings.form_fields.autofocus'
-                        comment: 'janvince.smallcontactform::lang.settings.form_fields.autofocus_comment'
-                        span: right
-                        type: checkbox
-                        tab: 'janvince.smallcontactform::lang.settings.tabs.form_fields'
-                        cssClass: field-indent
-
-                    wrapper_css:
-                        span: left
-                        label: 'janvince.smallcontactform::lang.settings.form_fields.wrapper_css'
-                        placeholder: 'janvince.smallcontactform::lang.settings.form_fields.wrapper_css_placeholder'
-                        type: text
-                        cssClass: field-indent
-                        trigger:
-                            action: show
-                            field: field_styling
-                            condition: checked
-
-                    label_css:
-                        span: left
-                        label: 'janvince.smallcontactform::lang.settings.form_fields.label_css'
-                        placeholder: 'janvince.smallcontactform::lang.settings.form_fields.label_css_placeholder'
-                        type: text
-                        cssClass: field-indent
-                        trigger:
-                            action: show
-                            field: field_styling
-                            condition: checked
-
-                    field_css:
-                        span: right
-                        label: 'janvince.smallcontactform::lang.settings.form_fields.field_css'
-                        placeholder: 'janvince.smallcontactform::lang.settings.form_fields.field_css_placeholder'
-                        type: text
-                        trigger:
-                            action: show
-                            field: field_styling
-                            condition: checked
-
-                    section_validation:
-                        type: section
-                        cssClass: field-indent
-                        trigger:
-                            action: show
-                            field: field_styling
-                            condition: checked
-
+                        cssClass: mt-1 mb-2
 
                     field_validation:
                         label: 'janvince.smallcontactform::lang.settings.form_fields.field_validation'
                         comment: 'janvince.smallcontactform::lang.settings.form_fields.field_validation_comment'
                         span: full
                         type: checkbox
-                        cssClass: field-indent
+                        # cssClass: field-indent
 
                     validation:
                         # label: 'janvince.smallcontactform::lang.settings.form_fields.validation'
@@ -419,23 +380,73 @@ tabs:
                                         field: validation_type
                                         condition: value[custom]
 
+                    section_validation_end:
+                        type: section
+                        span: full
+                        cssClass: field-indent mb-3 mt-2
+                        trigger:
+                            action: show
+                            field: field_validation
+                            condition: checked
+
+                    field_styling:
+                        label: 'janvince.smallcontactform::lang.settings.form_fields.field_styling'
+                        comment: 'janvince.smallcontactform::lang.settings.form_fields.field_styling_comment'
+                        span: full
+                        type: checkbox
+                        # cssClass: field-indent
+
+                    wrapper_css:
+                        span: full
+                        label: 'janvince.smallcontactform::lang.settings.form_fields.wrapper_css'
+                        placeholder: 'janvince.smallcontactform::lang.settings.form_fields.wrapper_css_placeholder'
+                        type: text
+                        cssClass: field-indent
+                        trigger:
+                            action: show
+                            field: field_styling
+                            condition: checked
+
+                    label_css:
+                        span: left
+                        label: 'janvince.smallcontactform::lang.settings.form_fields.label_css'
+                        placeholder: 'janvince.smallcontactform::lang.settings.form_fields.label_css_placeholder'
+                        type: text
+                        cssClass: field-indent
+                        trigger:
+                            action: show
+                            field: field_styling
+                            condition: checked
+
+                    field_css:
+                        span: right
+                        label: 'janvince.smallcontactform::lang.settings.form_fields.field_css'
+                        placeholder: 'janvince.smallcontactform::lang.settings.form_fields.field_css_placeholder'
+                        cssClass: field-indent
+                        type: text
+                        trigger:
+                            action: show
+                            field: field_styling
+                            condition: checked
+
+                    section_styling_end:
+                        type: section
+                        span: full
+                        cssClass: field-indent mb-3 mt-2
+                        trigger:
+                            action: show
+                            field: field_styling
+                            condition: checked
+
+                    autofocus:
+                        label: 'janvince.smallcontactform::lang.settings.form_fields.autofocus'
+                        comment: 'janvince.smallcontactform::lang.settings.form_fields.autofocus_comment'
+                        span: full
+                        type: checkbox
+                        # cssClass: field-indent
+
 
         ## MAPPING
-
-        autoreply_email_field:
-            label: 'janvince.smallcontactform::lang.settings.email.autoreply_email_field'
-            commentHtml: true
-            comment: 'janvince.smallcontactform::lang.settings.email.autoreply_email_field_comment'
-            span: left
-            type: dropdown
-            tab: 'janvince.smallcontactform::lang.settings.tabs.mapping'
-            emptyOption: 'janvince.smallcontactform::lang.settings.email.autoreply_email_field_empty_option'
-
-        partial_mapping:
-            type: partial
-            path: $/janvince/smallcontactform/models/settings/_mapping_help.htm
-            span: right
-            tab: 'janvince.smallcontactform::lang.settings.tabs.mapping'
 
         autoreply_name_field:
             label: 'janvince.smallcontactform::lang.settings.email.autoreply_name_field'
@@ -446,6 +457,15 @@ tabs:
             tab: 'janvince.smallcontactform::lang.settings.tabs.mapping'
             emptyOption: 'janvince.smallcontactform::lang.settings.email.autoreply_name_field_empty_option'
 
+        autoreply_email_field:
+            label: 'janvince.smallcontactform::lang.settings.email.autoreply_email_field'
+            commentHtml: true
+            comment: 'janvince.smallcontactform::lang.settings.email.autoreply_email_field_comment'
+            span: left
+            type: dropdown
+            tab: 'janvince.smallcontactform::lang.settings.tabs.mapping'
+            emptyOption: 'janvince.smallcontactform::lang.settings.email.autoreply_email_field_empty_option'
+
         autoreply_message_field:
             label: 'janvince.smallcontactform::lang.settings.email.autoreply_message_field'
             commentHtml: true
@@ -455,8 +475,16 @@ tabs:
             tab: 'janvince.smallcontactform::lang.settings.tabs.mapping'
             emptyOption: 'janvince.smallcontactform::lang.settings.email.autoreply_message_field_empty_option'
 
+        partial_mapping:
+            type: partial
+            path: $/janvince/smallcontactform/models/settings/_mapping_help.htm
+            span: left
+            cssClass: mt-3
+            tab: 'janvince.smallcontactform::lang.settings.tabs.mapping'
+
         partial_mapping_warning:
             type: partial
+            cssClass: mt-3
             path: $/janvince/smallcontactform/models/settings/_mapping_warning.htm
             span: right
             tab: 'janvince.smallcontactform::lang.settings.tabs.mapping'

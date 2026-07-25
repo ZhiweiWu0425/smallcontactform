@@ -15,7 +15,6 @@ use Form;
 use Log;
 use App;
 use Twig;
-use ReCaptcha\ReCaptcha;
 
 
 class SmallContactForm extends ComponentBase
@@ -39,7 +38,8 @@ class SmallContactForm extends ComponentBase
     public function componentDetails() {
         return [
             'name'        => 'janvince.smallcontactform::lang.controller.contact_form.name',
-            'description' => 'janvince.smallcontactform::lang.controller.contact_form.description'
+            'description' => 'janvince.smallcontactform::lang.controller.contact_form.description',
+            'snippetAjax' => true
         ];
     }
 
@@ -355,29 +355,73 @@ class SmallContactForm extends ComponentBase
     //  reCaptcha validation if enabled
     if(Settings::getTranslated('add_google_recaptcha')) 
     {
+        // Verify Google reCAPTCHA without external library
+        $captchaValid = false;
+
         try {
-            /**
-             * Text if allow_url_fopen is disabled
-             */
-            if (!ini_get('allow_url_fopen')) 
-            {
-              $recaptcha = new ReCaptcha(Settings::get('google_recaptcha_secret_key'), new \ReCaptcha\RequestMethod\SocketPost());
-            }
-            else {
-              // allow_url_fopen = On
-              $recaptcha = new ReCaptcha(Settings::get('google_recaptcha_secret_key'));
+            $secret = Settings::get('google_recaptcha_secret_key');
+            $token = post('g-recaptcha-response');
+            $remoteIp = $_SERVER['REMOTE_ADDR'] ?? null;
+
+            if (empty($secret) || empty($token)) {
+              throw new \RuntimeException('reCAPTCHA secret or response token is missing.');
             }
 
-            $response = $recaptcha->setExpectedHostname($this->validationReCaptchaServerName)->verify(post('g-recaptcha-response'), $_SERVER['REMOTE_ADDR']);
-        } 
-        catch(\Exception $e) 
-        {
-            Log::error($e->getMessage());
-            $errors[] = e(trans('janvince.smallcontactform::lang.settings.antispam.google_recaptcha_error_msg_placeholder'));
-        }
+            $payload = [
+              'secret'   => $secret,
+              'response' => $token,
+              'remoteip' => $remoteIp,
+            ];
 
-        if(!$response->isSuccess()) {
-            $errors[] = ( Settings::getTranslated('google_recaptcha_error_msg') ? Settings::getTranslated('google_recaptcha_error_msg') : e(trans('janvince.smallcontactform::lang.settings.antispam.google_recaptcha_error_msg_placeholder')));
+            // Prefer Laravel HTTP client if available
+            if (class_exists('\Illuminate\Support\Facades\Http')) {
+              $apiResponse = \Illuminate\Support\Facades\Http::asForm()
+                  ->timeout(10)
+                  ->post('https://www.google.com/recaptcha/api/siteverify', $payload);
+
+              if (!$apiResponse->successful()) {
+                  throw new \RuntimeException('reCAPTCHA HTTP request failed with status ' . $apiResponse->status());
+              }
+
+              $body = $apiResponse->json();
+
+            } else {
+
+              // Fallback to pure PHP
+              $context = stream_context_create([
+                  'http' => [
+                'method'  => 'POST',
+                'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
+                'content' => http_build_query($payload),
+                'timeout' => 10,
+                  ],
+              ]);
+
+              $responseBody = @file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
+
+              if ($responseBody === false) {
+                  throw new \RuntimeException('reCAPTCHA HTTP request failed.');
+              }
+
+              $body = json_decode($responseBody, true);
+
+            }
+
+            // Success flag
+            $captchaValid = !empty($body['success']);
+
+            // Optional hostname check similar to setExpectedHostname
+            if ($captchaValid && !empty($body['hostname'])) {
+              $captchaValid = (strcasecmp($body['hostname'], $this->validationReCaptchaServerName) === 0);
+            }
+
+          } catch (\Throwable $e) {
+              Log::error($e->getMessage());
+              $errors[] = e(trans('janvince.smallcontactform::lang.settings.antispam.google_recaptcha_error_msg_placeholder'));
+          }
+
+        if (!$captchaValid) {
+            $errors[] = ( Settings::getTranslated('google_recaptcha_error_msg') ? Settings::getTranslated('google_recaptcha_error_msg') : e(trans('janvince.smallcontactform::lang.settings.antispam.google_recaptcha_error_msg_placeholder')) );
         }
 
     }
@@ -609,10 +653,6 @@ class SmallContactForm extends ComponentBase
         $attributes['class'] .= Settings::getTranslated('form_css_class');
     }
 
-    if( !empty(Input::all()) ) {
-      $attributes['class'] .= ' was-validated';
-    }
-
     if( Settings::getTranslated('form_send_confirm_msg') and Settings::getTranslated('form_allow_confirm_msg') ) {
 
       $attributes['data-request-confirm'] = Settings::getTranslated('form_send_confirm_msg');
@@ -657,7 +697,7 @@ class SmallContactForm extends ComponentBase
     
     // Add wrapper error class if there are any
     if(!empty($this->postData[$fieldSettings['name']]['error'])){
-      $wrapperCss .= ' has-error';
+      $wrapperCss .= ' is-invalid';
     }
 
     $output[] = '<div class="' . $wrapperCss . '">';
@@ -790,7 +830,11 @@ class SmallContactForm extends ComponentBase
         $output[] = '</div>';
       }
 
-    $output[] = "</div>";
+      if(!empty($fieldSettings['hint'])){
+        $output[] = '<div class="form-text">' . $fieldSettings['hint'] . '</div>';
+      }
+      
+      $output[] = "</div>";
 
     return(implode('', $output));
 
@@ -822,7 +866,7 @@ class SmallContactForm extends ComponentBase
       // Field attributes
       $attributes = [
         'id' => '_protect-'.$this->alias,
-        'name' => '_protect',
+        'name' => '_protect-'.$this->alias,
         'class' => '_protect form-control',
         'value' => 'http://',
       ];
